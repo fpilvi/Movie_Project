@@ -3,7 +3,7 @@ from storage_csv import StorageCsv
 
 app = Flask(__name__)
 
-storage = StorageCsv('movies.csv')
+storage = StorageCsv('data/movies.csv')
 
 
 def get_movies():

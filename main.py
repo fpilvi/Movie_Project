@@ -9,7 +9,7 @@ def main():
     storage and passes it to the MovieApp class. The MovieApp instance
     is then run to start the application.
     """
-    storage = StorageCsv('movies.csv')
+    storage = StorageCsv('data/movies.csv')
 
     movie_app = MovieApp(storage)
 
