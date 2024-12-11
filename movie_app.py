@@ -136,14 +136,13 @@ class MovieApp:
         if not movies:
             print("No movies available.")
         else:
-            random_movie_title = random.choice(list(movies.keys()))  # Randomly pick a movie title
-            movie_details = get_movie_details(random_movie_title)  # Fetch movie details from OMDB API
+            random_movie_title = random.choice(list(movies.keys()))
+            movie_details = get_movie_details(random_movie_title)
 
             if "Error" not in movie_details:
                 title = movie_details.get('Title', 'N/A')
                 year = movie_details.get('Year', 'N/A')
                 rating = movie_details.get('imdbRating', 'N/A')
-                poster = movie_details.get('Poster', None)
 
                 print(f"Random Movie: {title} ({year})")
                 print(f"Rating: {rating}")
