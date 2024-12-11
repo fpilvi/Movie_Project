@@ -21,10 +21,8 @@ def get_movie_details(title):
         movie_data = response.json()
 
         if response.status_code == 200:
-            # If the response contains an error message from the API
             if movie_data.get('Error'):
                 return {"Error": movie_data['Error']}
-            # Return the desired movie details
             return {
                 'Title': movie_data.get('Title', 'N/A'),
                 'Year': movie_data.get('Year', 'N/A'),
