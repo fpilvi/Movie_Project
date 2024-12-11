@@ -12,8 +12,13 @@ class MovieApp:
     def _command_generate_website(self):
         """Create a website with the current list of movies."""
         try:
-            with open('static/index_template.html', 'r') as template_file:
-                template = template_file.read()
+            template_path = 'static/index_template.html'
+            try:
+                with open(template_path, 'r') as template_file:
+                    template = template_file.read()
+            except FileNotFoundError:
+                print(f"Error: Template file '{template_path}' not found.")
+                return
 
             movie_grid = ""
             movies = self._storage.list_movies()
@@ -45,8 +50,9 @@ class MovieApp:
         if not movies:
             print("No movies available.")
         else:
+            print("Movies in your collection:")
             for title, movie in movies.items():
-                print(f"Title: {title}, Year: {movie['year']}, Rating: {movie['rating']}, Poster: {movie['poster']}")
+                print(f"{title} - {movie['rating']} - {movie['year']}")
 
     def _command_add_movie(self):
         """Add a new movie to the collection using the OMDb API."""
@@ -55,11 +61,13 @@ class MovieApp:
 
         if "Error" not in movie_details:
             print(f"Movie found: {movie_details['Title']} ({movie_details['Year']})")
+            print(f"Rating: {movie_details.get('imdbRating', 'N/A')}")
+
             self._storage.add_movie(
                 movie_details['Title'],
                 movie_details['Year'],
-                movie_details['imdbRating'],
-                movie_details['Poster'] if 'Poster' in movie_details else "No Poster Available"
+                movie_details.get('imdbRating', 'N/A'),
+                movie_details.get('Poster', "No Poster Available")
             )
             print(f"Movie '{movie_details['Title']}' added.")
         else:
@@ -92,35 +100,55 @@ class MovieApp:
             print(f"Movie '{title}' not found.")
 
     def _command_movie_stats(self):
-        """Show statistics about the movies (total count and average rating)."""
+        """Show statistics about the movies (total count, average rating, best, and worst movie)."""
         movies = self._storage.list_movies()
         if not movies:
             print("No movies to calculate statistics for.")
             return
 
         total_rating = 0
-        count = 0
+        count = len(movies)
         for movie in movies.values():
-            total_rating += movie["rating"]
-            count += 1
+            total_rating += float(movie["rating"])
 
         average_rating = total_rating / count if count > 0 else 0
+
+        best_movies = []
+        worst_movies = []
+        max_rating = max(float(movie["rating"]) for movie in movies.values())
+        min_rating = min(float(movie["rating"]) for movie in movies.values())
+
+        for title, movie in movies.items():
+            if float(movie["rating"]) == max_rating:
+                best_movies.append(title)
+            if float(movie["rating"]) == min_rating:
+                worst_movies.append(title)
+
         print(f"Total Movies: {count}")
         print(f"Average Rating: {average_rating:.2f}")
+        print(f"Best Movie: {', '.join(best_movies)} (Rating: {max_rating})")
+        print(f"Worst Movie: {', '.join(worst_movies)} (Rating: {min_rating})")
 
     def _command_random_movie(self):
         """Pick and show a random movie from the collection."""
         movies = self._storage.list_movies()
+
         if not movies:
             print("No movies available.")
         else:
-            random_movie_title = random.choice(list(movies.keys()))
-            movie_details = get_movie_details(random_movie_title)
+            random_movie_title = random.choice(list(movies.keys()))  # Randomly pick a movie title
+            movie_details = get_movie_details(random_movie_title)  # Fetch movie details from OMDB API
 
             if "Error" not in movie_details:
-                print(f"Random Movie: {movie_details['Title']} ({movie_details['Year']})")
-                print(f"Rating: {movie_details['imdbRating']}")
-                print(f"Poster: {movie_details['Poster'] if 'Poster' in movie_details else 'No Poster Available'}")
+                title = movie_details.get('Title', 'N/A')
+                year = movie_details.get('Year', 'N/A')
+                rating = movie_details.get('imdbRating', 'N/A')
+                poster = movie_details.get('Poster', None)
+
+                print(f"Random Movie: {title} ({year})")
+                print(f"Rating: {rating}")
+
+
             else:
                 print(f"Error: {movie_details['Error']}")
 
@@ -145,7 +173,7 @@ class MovieApp:
         else:
             sorted_movies = sorted(movies.items(), key=lambda x: x[1]['rating'], reverse=True)
             for title, movie in sorted_movies:
-                print(f"Title: {title}, Year: {movie['year']}, Rating: {movie['rating']}, Poster: {movie['poster']}")
+                print(f"Title: {title}, Year: {movie['year']}, Rating: {movie['rating']}")
 
     def _print_menu(self):
         """Display the main menu for the user."""

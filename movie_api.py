@@ -2,7 +2,6 @@ import requests
 
 OMDB_API_KEY = '7a9062b5'
 
-
 def get_movie_details(title):
     """
     Fetches movie details from the OMDb API based on the provided title.
@@ -19,14 +18,21 @@ def get_movie_details(title):
 
     try:
         response = requests.get(url)
-        print(response.json())
-        #response.raise_for_status()
+        movie_data = response.json()
 
         if response.status_code == 200:
-            return response.json()
+            # If the response contains an error message from the API
+            if movie_data.get('Error'):
+                return {"Error": movie_data['Error']}
+            # Return the desired movie details
+            return {
+                'Title': movie_data.get('Title', 'N/A'),
+                'Year': movie_data.get('Year', 'N/A'),
+                'imdbRating': movie_data.get('imdbRating', 'N/A'),
+                'Poster': movie_data.get('Poster', 'N/A'),
+            }
         else:
             return {"Error": "Movie not found"}
+
     except requests.exceptions.RequestException as e:
         return {"Error": f"API connection error: {e}"}
-
-
